@@ -1,0 +1,11 @@
+.carousel {
+    position: relative;  /* Ensures child elements with absolute positioning work correctly */
+  }
+
+  .carousel .slide img {
+    max-width: 100%;  /* Ensures the image doesn't exceed the width of its container */
+    max-height: 400px;  /* Adjust this value based on how tall you want the image to be */
+    object-fit: contain; /* Keeps the image aspect ratio intact */
+    margin: 0 auto;  /* Centers the image */
+    border-radius: 10px; /* Optional: Adds rounded corners to images */
+  }

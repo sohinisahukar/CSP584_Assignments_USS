@@ -1,0 +1,35 @@
+.products-layout {
+  display: flex;
+  margin-left: 100px; /* Add margin to leave space for the sidebar */
+  padding: 20px;
+}
+
+.products-page {
+  width: 100%;
+  padding-left: 0;
+}
+
+.product-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 20px;
+  padding: 0;
+}
+
+.product-card {
+  background-color: #222;
+  color: white;
+  border-radius: 10px;
+  padding: 20px;
+  text-align: center;
+}
+
+.product-image {
+  max-width: 100%;
+  height: auto;
+}
+
+.price {
+  font-size: 18px;
+  margin: 10px 0;
+}
