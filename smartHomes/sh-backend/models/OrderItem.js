@@ -1,11 +1,9 @@
 const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
-// const Order = require('./Order'); // Import related models
-// const Product = require('./Product'); // Import related models
 
 class OrderItem extends Model {}
-
 OrderItem.init({
+
     orderItemId: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -37,7 +35,12 @@ OrderItem.init({
     },
     price: {
         type: DataTypes.DECIMAL(10, 2),
-        allowNull: false
+        allowNull: false,
+        get() {
+            // Convert price from string to number
+            const price = this.getDataValue('price');
+            return parseFloat(price);
+        },
     },
     discount: {
         type: DataTypes.DECIMAL(10, 2),

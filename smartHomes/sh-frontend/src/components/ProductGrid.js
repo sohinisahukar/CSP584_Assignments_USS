@@ -48,7 +48,6 @@ const ProductGrid = () => {
           <img src={product.image_path} alt={product.name} className="product-image" />
           <h2>{product.name}</h2>
           <p className="price">${product.price.toFixed(2)}</p>
-          <button className="add-to-cart">Add to Cart</button>
           <button className="view-button" onClick={() => handleViewProduct(product.product_id)}>
             View
           </button>

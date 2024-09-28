@@ -4,7 +4,7 @@ import { CartContext } from '../context/CartContext';
 import { useNavigate } from 'react-router-dom';
 
 const Cart = () => {
-  const { cartItems, removeItemFromCart, addItemToCart, calculateTotal } = useContext(CartContext);
+  const { cartItems, removeItemFromCart, addItemToCart, calculateRawTotal } = useContext(CartContext);
 
   const navigate = useNavigate()
 
@@ -39,7 +39,7 @@ const Cart = () => {
       )}
       {cartItems.length > 0 && (
         <>
-          <h3>Total: ${calculateTotal().toFixed(2)}</h3>
+          <h3>Total: ${calculateRawTotal().toFixed(2)}</h3>
           {/* Checkout button */}
           <button onClick={handleCheckout} className="checkout-button">
             Proceed to Checkout

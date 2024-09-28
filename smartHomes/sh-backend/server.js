@@ -7,14 +7,14 @@ const cors = require('cors');
 const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
-// const Order = require('./models/Order');
-// const OrderItem = require('./models/OrderItem');
-// const User = require('./models/User');
-const { Order, OrderItem, User } = require('./models/associations');
+const addressRoutes = require('./routes/addresses');
 
 const app = express();
 app.use(express.json());
 app.use(cors({ origin: 'http://localhost:3000' }));
+
+// Initialize the database models and associations
+require('./models/associations');
 
 // Use auth routes for login and signup
 app.use('/api/auth', authRoutes);
@@ -22,6 +22,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
 
 app.use('/api/orders', orderRoutes);
+
+app.use('/api/addresses', addressRoutes);
 
 
 // Connect to the MySQL database and sync models
@@ -122,7 +124,7 @@ app.get('/stores', async (req, res) => {
 // });
 
 // Sync and start server
-sequelize.sync({ alter: true })
+sequelize.sync()
   .then(() => {
     console.log('Database synced and tables created/updated!');
     app.listen(5000, () => console.log('Server running on port 5000'));

@@ -1,8 +1,9 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
 
-// Define the Product model
-const Product = sequelize.define('Product', {
+class Product extends Model {}
+Product.init({
+
   product_id: {
     type: DataTypes.INTEGER,
     autoIncrement: true,
@@ -48,6 +49,8 @@ const Product = sequelize.define('Product', {
     allowNull: false,
   },
 }, {
+  sequelize,
+  modelName: 'Product',
   tableName: 'products', // Match the MySQL table name
   timestamps: false, // Disable createdAt and updatedAt columns
 });

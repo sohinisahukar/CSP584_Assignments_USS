@@ -1,8 +1,9 @@
-const { DataTypes } = require('sequelize');
+const { DataTypes, Model } = require('sequelize');
 const sequelize = require('../config/database');
-const Order = require('./Order');
 
-const User = sequelize.define('User', {
+class User extends Model {}
+User.init({
+
     user_id: {
         type: DataTypes.INTEGER,
         autoIncrement: true,
@@ -27,11 +28,10 @@ const User = sequelize.define('User', {
         defaultValue: 'Customer'  // Default role is Customer
     }
 }, {
+    sequelize,
     tableName: 'user',
+    modelName: 'User',
     timestamps: false, // Add timestamps if your table has createdAt and updatedAt fields
 });
-
-// Associations
-User.hasMany(Order, { foreignKey: 'userId', as: 'orders' });
 
 module.exports = User;

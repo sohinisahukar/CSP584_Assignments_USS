@@ -1,9 +1,6 @@
 const { DataTypes, Model } = require('sequelize');
-const sequelize = require('../config/database'); // assuming your Sequelize connection is setup in config/database.js
-// const OrderItem = require('./OrderItem'); // Import related models
-// const User = require('./User'); // Import related models
+const sequelize = require('../config/database');
 
-// const Order = sequelize.define('Order', {
 class Order extends Model {}
 
 Order.init({
@@ -19,14 +16,6 @@ Order.init({
             model: 'user',
             key: 'user_id',
         },
-    },
-    customerName: {
-        type: DataTypes.STRING,
-        allowNull: false,
-    },
-    customerAddress: {
-        type: DataTypes.STRING,
-        allowNull: false,
     },
     creditCard: {
         type: DataTypes.STRING(16),
@@ -47,7 +36,7 @@ Order.init({
             // Convert price from string to number
             const totalSales = this.getDataValue('totalSales');
             return parseFloat(totalSales);
-          },
+        },
     },
     storeId: {
         type: DataTypes.INTEGER,
@@ -56,9 +45,28 @@ Order.init({
             model: 'stores',
             key: 'storeId',
         },
-    }
+    },
+    shippingCost: { // Add this line
+        type: DataTypes.DECIMAL(10, 2),
+        allowNull: false,
+        defaultValue: 0.99,
+        get() {
+            // Convert price from string to number
+            const shippingCost = this.getDataValue('shippingCost');
+            return parseFloat(shippingCost);
+        },
+    },
+    addressId: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+        references: {
+            model: 'customer_addresses',
+            key: 'addressId'
+        },
+    },
 }, {
     sequelize,
+    modelName: 'Order',
     tableName: 'orders',
     timestamps: false
 });

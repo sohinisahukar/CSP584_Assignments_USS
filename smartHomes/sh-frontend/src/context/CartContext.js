@@ -49,15 +49,27 @@ export const CartProvider = ({ children }) => {
   // Calculate total items in cart
   const cartItemCount = cartItems.reduce((count, item) => count + item.quantity, 0);
 
-  const calculateTotal = () => {
-    return cartItems.reduce((total, item) => {
+  const calculateRawTotal = () => {
+    // Calculate the total price based on item quantity, price, discounts, and rebates
+    const rawTotal = cartItems.reduce((total, item) => {
       const discountPrice = item.price - (item.retailer_discount || 0) - (item.manufacturer_rebate || 0);
       return total + (discountPrice * item.quantity);
     }, 0);
+
+    return rawTotal;
+  };
+
+  const calculateTotalWithShipping = () => {
+    return calculateRawTotal() + calculateShippingCost();
+  }
+
+  // Add function to calculate shipping cost
+  const calculateShippingCost = () => {
+    return cartItems.reduce((total, item) => total + (0.99 * item.quantity), 0);
   };
 
   return (
-    <CartContext.Provider value={{ cartItems, addItemToCart, removeItemFromCart, clearCart, cartItemCount, calculateTotal }}>
+    <CartContext.Provider value={{ cartItems, addItemToCart, removeItemFromCart, clearCart, cartItemCount, calculateRawTotal, calculateTotalWithShipping, calculateShippingCost }}>
       {children}
     </CartContext.Provider>
   );

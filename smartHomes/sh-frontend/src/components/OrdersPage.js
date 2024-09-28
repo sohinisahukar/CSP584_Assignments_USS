@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import './OrdersPage.css'; // You can style the page with CSS as needed
 
@@ -7,6 +8,8 @@ const OrdersPage = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -35,8 +38,8 @@ const OrdersPage = () => {
 
   const handleCancelOrder = async (orderId) => {
     try {
-      const response = await fetch(`/api/orders/${orderId}/cancel`, {
-        method: 'POST',
+      const response = await fetch(`http://localhost:5000/api/orders/cancel/${orderId}`, {
+        method: 'DELETE',
         headers: {
           'Authorization': `Bearer ${user.token}`,
           'Content-Type': 'application/json'
@@ -48,11 +51,10 @@ const OrdersPage = () => {
       }
 
       // Update the orders list by removing the canceled order
-      setOrders(orders.map(order => 
-        order.orderId === orderId ? { ...order, status: 'Canceled' } : order
-      ));
+      setOrders(orders.filter(order => order.orderId !== orderId));
 
       alert('Order canceled successfully');
+      navigate('/orders');
     } catch (err) {
       alert('Error canceling order: ' + err.message);
     }
@@ -82,19 +84,36 @@ const OrdersPage = () => {
               <p>Purchase Date: {new Date(order.purchaseDate).toLocaleDateString()}</p>
               <p>Ship/Delivery Date: {new Date(order.shipDate).toLocaleDateString()}</p>
               <p>Total Sales: ${order.totalSales.toFixed(2)}</p>
+              <p>Shipping Cost: ${order.shippingCost.toFixed(2)}</p>
               {/* <p>Order Status: {order.status || 'Processing'}</p> */}
 
               <h4>Items in Order:</h4>
               <ul>
                 {order.items.map((item) => (
                   <li key={item.productId}>
-                    {item.quantity} x {item.productName} (${item.price.toFixed(2)})
+                    {item.quantity} x {item.product.name} (${item.price.toFixed(2)})
                   </li>
                 ))}
               </ul>
 
-              {order.storeId && (
-                <p>Pickup from Store ID: {order.storeId}</p>
+              {/* Display store address if storeId exists (store pickup) */}
+              {order.store && (
+                <div>
+                  <h4>Store Pickup Address:</h4>
+                  <p>
+                    {order.store.street}, {order.store.city}, {order.store.state} {order.store.zipCode}
+                  </p>
+                </div>
+              )}
+
+              {/* Display shippingAddress (billing address) */}
+              {order.shippingAddress && (
+                <div>
+                  <h4>Billing Address:</h4>
+                  <p>
+                    {order.shippingAddress.street}, {order.shippingAddress.city}, {order.shippingAddress.state} {order.shippingAddress.zipCode}
+                  </p>
+                </div>
               )}
 
               {/* Show Cancel Button if within 5 business days before delivery */}
