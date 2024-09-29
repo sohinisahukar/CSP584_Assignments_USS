@@ -21,9 +21,6 @@ const ProductDetails = () => {
 
   const [quantity, setQuantity] = useState(1);
 
-  // New state for checking if the user has purchased the product
-  const [hasPurchased, setHasPurchased] = useState(false);
-
   // Fetch product details when component mounts
   useEffect(() => {
     const fetchProductDetails = async () => {
@@ -44,25 +41,6 @@ const ProductDetails = () => {
     fetchProductDetails();
   }, [id]);
 
-  // Fetch whether the user has purchased the product
-  useEffect(() => {
-    const checkIfUserPurchased = async () => {
-      try {
-        const response = await fetch(`http://localhost:5000/api/orders/hasPurchased/${user.userId}/${id}`, {
-          headers: {
-            'Authorization': `Bearer ${user.token}`
-          }
-        });
-        const data = await response.json();
-        setHasPurchased(data.purchased); // Set if the user has purchased the product
-      } catch (err) {
-        console.error('Error checking purchase status:', err);
-      }
-    };
-    if (user) {
-      checkIfUserPurchased();
-    }
-  }, [user, id]);
 
   // Handle Update Product
   const handleUpdate = async () => {
@@ -174,6 +152,7 @@ const ProductDetails = () => {
           )}
         </p>
         <p>Category: {product.category}</p>
+        <p>Manufacturer: {product.manufacturer_name}</p>
         {/* <p>Retailer Discount: ${product.retailer_discount.toFixed(2)}</p> */}
         <p>Retailer Discount: 
         {isEditing ? (
@@ -213,12 +192,12 @@ const ProductDetails = () => {
         </div>
         )}
 
-        {/* Display the review button if the user has purchased the product */}
-        {hasPurchased && (
-          <button onClick={() => navigate(`/products/${id}/review`)} className="add-to-cart">
+        
+          <button onClick={() => {
+            navigate(`/products/${id}/review`);
+            }} className="add-to-cart">
             Write a Review
           </button>
-        )}
 
         {user && user.userRole === 'StoreManager' && (
           <div>

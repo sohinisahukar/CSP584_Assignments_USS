@@ -1,0 +1,15 @@
+.star-rating {
+    display: flex;
+    direction: row;
+  }
+  
+  .star-rating input {
+    display: none;
+  }
+  
+  .star-rating i {
+    font-size: 2rem;
+    cursor: pointer;
+    transition: color 200ms;
+  }
+  

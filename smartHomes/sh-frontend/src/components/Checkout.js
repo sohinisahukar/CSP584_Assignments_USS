@@ -27,24 +27,31 @@ const Checkout = () => {
 
   // Fetch stores and saved addresses for the user
   useEffect(() => {
-      const fetchStoresAndAddresses = async () => {
-        try {
-          const [storeRes, addressRes] = await Promise.all([
-            fetch('http://localhost:5000/stores'), // Fetch stores
-            fetch(`http://localhost:5000/api/addresses/${user.userId}`) // Fetch user's saved addresses
-          ]);
-    
-          if (addressRes.ok) {
-            const storesData = await storeRes.json();
-            const addressesData = await addressRes.json();
-            setStores(storesData);
-            setAddresses(addressesData);
-          } else {
-            console.error('Failed to fetch addresses');
-          }
-        } catch (err) {
-          console.error('Error fetching stores or addresses:', err);
+    const fetchStoresAndAddresses = async () => {
+      try {
+        const [storeRes, addressRes] = await Promise.all([
+          fetch('http://localhost:5000/stores'), // Fetch stores
+          fetch(`http://localhost:5000/api/addresses/${user.userId}`) // Fetch user's saved addresses
+        ]);
+
+        if (storeRes.ok) {
+          const storesData = await storeRes.json();
+          setStores(storesData);
         }
+
+        if (addressRes.ok) {
+          const addressesData = await addressRes.json();
+          if (Array.isArray(addressesData)) {
+            setAddresses(addressesData);  // Only set if it's an array
+          } else {
+            setAddresses([]);    // Fallback to empty array
+          }
+        } else {
+          console.error('Failed to fetch addresses');
+        }
+      } catch (err) {
+        console.error('Error fetching stores or addresses:', err);
+      }
     };
     fetchStoresAndAddresses();
   }, [user]);
@@ -102,7 +109,7 @@ const Checkout = () => {
 
     let totalSales = 0;
     let shippingCost = 0;
-    if(formData.deliveryOption === 'home-delivery') {
+    if (formData.deliveryOption === 'home-delivery') {
       shippingCost = Number(0.00);
       totalSales = Number(calculateRawTotal().toFixed(2));
     } else {
@@ -166,56 +173,60 @@ const Checkout = () => {
         </div>
 
         {/* {formData.deliveryOption === 'home-delivery' && ( */}
-          <>
-            <div>
-              <label>Choose Existing Address</label>
-              <select name="addressId" onChange={handleExistingAddressChange}>
-                <option value="">--Select Address--</option>
-                {addresses.map((address) => (
+        <>
+          <div>
+            <label>Choose Existing Address</label>
+            <select name="addressId" onChange={handleExistingAddressChange}>
+              <option value="">--Select Address--</option>
+              {Array.isArray(addresses) && addresses.length > 0 ? (
+                addresses.map((address) => (
                   <option key={address.addressId} value={address.addressId}>
                     {address.street}, {address.city}, {address.state}, {address.zipCode}
                   </option>
-                ))}
-              </select>
-            </div>
-            {!useExistingAddress && (
-              <>
-                <div>
-                  <label>Enter New Address</label>
-                  <input
-                    type="text"
-                    name="street"
-                    value={formData.street}
-                    onChange={handleNewAddressChange}
-                    placeholder="Street"
-                  />
-                  <input
-                    type="text"
-                    name="city"
-                    value={formData.city}
-                    onChange={handleNewAddressChange}
-                    placeholder="City"
-                  />
-                  <input
-                    type="text"
-                    name="state"
-                    value={formData.state}
-                    onChange={handleNewAddressChange}
-                    placeholder="State"
-                  />
-                  <input
-                    type="text"
-                    name="zipCode"
-                    value={formData.zipCode}
-                    onChange={handleNewAddressChange}
-                    placeholder="ZIP Code"
-                  />
-                </div>
-              </>
-            )}
-          </>
+                ))
+              ) : (
+                <option value="">No addresses available</option>
+              )}
+            </select>
+          </div>
+          {!useExistingAddress && (
+            <>
+              <div>
+                <label>Enter New Address</label>
+                <input
+                  type="text"
+                  name="street"
+                  value={formData.street}
+                  onChange={handleNewAddressChange}
+                  placeholder="Street"
+                />
+                <input
+                  type="text"
+                  name="city"
+                  value={formData.city}
+                  onChange={handleNewAddressChange}
+                  placeholder="City"
+                />
+                <input
+                  type="text"
+                  name="state"
+                  value={formData.state}
+                  onChange={handleNewAddressChange}
+                  placeholder="State"
+                />
+                <input
+                  type="text"
+                  name="zipCode"
+                  value={formData.zipCode}
+                  onChange={handleNewAddressChange}
+                  placeholder="ZIP Code"
+                />
+              </div>
+            </>
+          )}
+        </>
         {/* )}  */}
-        
+
         {formData.deliveryOption === 'pickup' && (
           <div>
             <p>The cost of shipping per item is $0.99.</p>
@@ -231,7 +242,7 @@ const Checkout = () => {
             </select>
           </div>
         )}
-        
+
         <button type="submit">Place Order</button>
       </form>
       {successMessage && <p>{successMessage}</p>}

@@ -17,6 +17,8 @@ import AddProduct from './components/AddProduct';
 import Cart from './components/Cart';
 import Checkout from './components/Checkout';
 import OrdersPage from './components/OrdersPage';
+import WriteReview from './components/WriteReview';
+import Trending from './components/Trending';
 // import ProtectedRoute from './components/ProtectedRoute';
 
 
@@ -48,6 +50,8 @@ function App() {
             <Route path="/cart" element={<Cart />} />
             <Route path="/checkout" element={<Checkout />} />
             <Route path="/orders" element={ <OrdersPage />} />
+            <Route path="/products/:productId/review" element={ <WriteReview />} />
+            <Route path="/trending" element={ < Trending />} />
           </Routes>
         </div>
       </div>

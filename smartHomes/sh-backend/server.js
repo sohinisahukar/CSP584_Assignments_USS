@@ -1,5 +1,7 @@
 const express = require('express');
 const sequelize = require('./config/database');
+const mongoose = require('mongoose');
+
 const Product = require('./models/Product');
 const Accessory = require('./models/Accessory');
 const Store = require('./models/Store');
@@ -8,6 +10,8 @@ const authRoutes = require('./routes/auth');
 const productRoutes = require('./routes/products');
 const orderRoutes = require('./routes/orders');
 const addressRoutes = require('./routes/addresses');
+
+const reviewRoutes = require('./routes/review');
 
 const app = express();
 app.use(express.json());
@@ -25,19 +29,36 @@ app.use('/api/orders', orderRoutes);
 
 app.use('/api/addresses', addressRoutes);
 
+app.use('/api/reviews', reviewRoutes);
 
-// Connect to the MySQL database and sync models
-sequelize.authenticate()
-  .then(() => {
+
+// Function to initialize MySQL and MongoDB connections
+const initializeDatabases = async () => {
+  try {
+    // Connect to MySQL and sync models
+    await sequelize.authenticate();
     console.log('Connected to MySQL');
-    return sequelize.sync(); // Sync models with the database
-  })
-  .then(() => {
-    console.log('Database synchronized');
-  })
-  .catch((error) => {
-    console.error('Unable to connect to MySQL:', error);
+    await sequelize.sync();
+    console.log('MySQL Database synchronized');
+
+    // Connect to MongoDB
+    const mongoURI = 'mongodb+srv://ssahukar:ssahukar@cluster0.4oegw.mongodb.net/smarthomes?retryWrites=true&w=majority'; // Add your database name
+    await mongoose.connect(mongoURI)
+      .then(() => console.log('Connected to MongoDB'))
+      .catch((err) => console.log('Error connecting to MongoDB:', err));
+  } catch (error) {
+    console.error('Error connecting to databases:', error);
+    process.exit(1); // Exit the process with failure
+  }
+};
+
+// Start server after databases are initialized
+initializeDatabases().then(() => {
+  const PORT = process.env.PORT || 5000;
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
+});
 
 // Create a route to get all products
 app.get('/products', async (req, res) => {
@@ -110,23 +131,39 @@ app.get('/stores', async (req, res) => {
   }
 });
 
-// // Syncing models and database
-// sequelize.sync({ alter: true }) // Sync models with DB
-//   .then(() => {
-//     console.log('Database & tables created!');
-//   })
-//   .catch(err => console.error('Error syncing database:', err));
 
-// // Start the server
-// const PORT = process.env.PORT || 5000;
-// app.listen(PORT, () => {
-//   console.log(`Server running on port ${PORT}`);
-// });
+app.get('/topProducts/zipcode', async (req, res) => {
+  try {
+    const topProducts = await sequelize.query(`
+      SELECT a.zipCode, COUNT(oi.productId) AS total_products_sold
+      FROM orders o
+      JOIN customer_addresses a ON o.addressId = a.addressId
+      JOIN order_items oi ON o.orderId = oi.orderId
+      GROUP BY a.zipCode
+      ORDER BY total_products_sold DESC
+      LIMIT 5;
+    `, { type: sequelize.QueryTypes.SELECT });
 
-// Sync and start server
-sequelize.sync()
-  .then(() => {
-    console.log('Database synced and tables created/updated!');
-    app.listen(5000, () => console.log('Server running on port 5000'));
-  })
-  .catch(err => console.error('Error syncing database:', err));
+    res.json(topProducts);
+  } catch (error) {
+    console.error('Error fetching top products:', error);
+    res.status(500).json({ message: 'Server error', error });
+  }
+});
+
+app.get('/topProducts/mostSold', async (req, res) => {
+  try {
+    const [results] = await sequelize.query(`
+      SELECT p.name, SUM(oi.quantity) AS total_sold
+      FROM order_items oi
+      JOIN products p ON oi.productId = p.product_id
+      GROUP BY p.name
+      ORDER BY total_sold DESC
+      LIMIT 5;
+    `);
+    res.json(results);
+  } catch (error) {
+    console.error('Error fetching top sold products:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});

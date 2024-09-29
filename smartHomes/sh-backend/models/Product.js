@@ -48,6 +48,10 @@ Product.init({
     type: DataTypes.STRING,
     allowNull: false,
   },
+  manufacturer_name: {
+    type: DataTypes.STRING,
+    allowNull: false,
+  },
 }, {
   sequelize,
   modelName: 'Product',
