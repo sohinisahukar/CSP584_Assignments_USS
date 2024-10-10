@@ -2,7 +2,8 @@
 const express = require('express');
 const { authMiddleware, storeManagerOnly } = require('../middleware/authMiddleware');
 const Product = require('../models/Product');
-
+const { Op } = require('sequelize');
+const sequelize = require('../config/database');
 const router = express.Router();
 
 // Add a new product (Only StoreManagers can do this)
@@ -60,6 +61,87 @@ router.delete('/:id', authMiddleware, storeManagerOnly, async (req, res) => {
   } catch (err) {
     console.error(err.message);
     res.status(500).json({ msg: 'Server error' });
+  }
+});
+
+// Fetch all products with relevant details for the inventory (Only accessible to StoreManagers)
+router.get('/inventory', authMiddleware, storeManagerOnly, async (req, res) => {
+  try {
+      const products = await Product.findAll({
+          attributes: ['name', 'price', 'stock', 'retailer_discount', 'manufacturer_rebate']
+      });
+      res.json(products);
+  } catch (error) {
+      console.error('Error fetching inventory:', error);
+      res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Fetch products currently on sale (Only accessible to StoreManagers)
+router.get('/onSale', authMiddleware, storeManagerOnly, async (req, res) => {
+  try {
+      const productsOnSale = await Product.findAll({
+          where: { retailer_discount: { [Op.gt]: 0 } },
+          attributes: ['name', 'price', 'stock', 'retailer_discount']
+      });
+      res.json(productsOnSale);
+  } catch (error) {
+      console.error('Error fetching products on sale:', error);
+      res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Fetch products with manufacturer rebates (Only accessible to StoreManagers)
+router.get('/manufacturerRebates', authMiddleware, storeManagerOnly, async (req, res) => {
+  try {
+      const productsWithRebates = await Product.findAll({
+          where: { manufacturer_rebate: { [Op.gt]: 0 } },
+          attributes: ['name', 'price', 'stock', 'manufacturer_rebate']
+      });
+      res.json(productsWithRebates);
+  } catch (error) {
+      console.error('Error fetching products with manufacturer rebates:', error);
+      res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Route to get all products sold and their sales details
+router.get('/salesReport/products', authMiddleware, storeManagerOnly, async (req, res) => {
+  try {
+    const salesReport = await sequelize.query(`
+      SELECT p.name AS productName, p.price AS productPrice, 
+             SUM(oi.quantity) AS itemsSold, 
+             SUM(oi.quantity * p.price) AS totalSales
+      FROM order_items oi
+      JOIN products p ON oi.productId = p.product_id
+      GROUP BY p.product_id, p.name, p.price
+      ORDER BY totalSales DESC;
+    `, { type: sequelize.QueryTypes.SELECT });
+
+    res.json(salesReport);
+  } catch (error) {
+    console.error('Error fetching sales report:', error);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// Route to get daily sales report
+router.get('/salesReport/daily', authMiddleware, storeManagerOnly, async (req, res) => {
+  try {
+    const dailySales = await sequelize.query(`
+      SELECT DATE(o.purchaseDate) AS saleDate, 
+             SUM(oi.quantity * p.price) AS totalSales
+      FROM orders o
+      JOIN order_items oi ON o.orderId = oi.orderId
+      JOIN products p ON oi.productId = p.product_id
+      GROUP BY saleDate
+      ORDER BY saleDate DESC;
+    `, { type: sequelize.QueryTypes.SELECT });
+
+    res.json(dailySales);
+  } catch (error) {
+    console.error('Error fetching daily sales report:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 });
 

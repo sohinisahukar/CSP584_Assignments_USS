@@ -19,6 +19,8 @@ import Checkout from './components/Checkout';
 import OrdersPage from './components/OrdersPage';
 import WriteReview from './components/WriteReview';
 import Trending from './components/Trending';
+import Inventory from './components/Inventory';
+import SalesReport from './components/SalesReport';
 // import ProtectedRoute from './components/ProtectedRoute';
 
 
@@ -52,6 +54,8 @@ function App() {
             <Route path="/orders" element={ <OrdersPage />} />
             <Route path="/products/:productId/review" element={ <WriteReview />} />
             <Route path="/trending" element={ < Trending />} />
+            <Route path="/inventory" element={< Inventory />} />
+            <Route path="/sales-report" element={< SalesReport />} />
           </Routes>
         </div>
       </div>

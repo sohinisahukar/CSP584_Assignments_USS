@@ -9,6 +9,7 @@ const User = require('../models/User');
 const Store = require('../models/Store');
 const { v4: uuidv4 } = require('uuid');
 const { authMiddleware } = require('../middleware/authMiddleware');
+const sequelize = require('../config/database');
 
 // Utility function to calculate business days difference
 const isWithinFiveBusinessDays = (shipDate) => {
@@ -51,6 +52,9 @@ router.post('/checkout', [
       return res.status(400).json({ error: 'Address not found for this user' });
     }
 
+    // Start a transaction to ensure all updates are atomic
+    const transaction = await sequelize.transaction();
+
     // Create order record
     const newOrder = await Order.create({
       orderId,
@@ -62,10 +66,26 @@ router.post('/checkout', [
       totalSales,
       shippingCost,
       storeId: deliveryOption === 'pickup' ? storeId : null,
-    });
+    }, { transaction });
 
     // Add items to the order_items table
     for (let item of cartItems) {
+
+      // Find the product to update stock
+      const product = await Product.findByPk(item.product_id);
+      if (!product) {
+        throw new Error(`Product with ID ${item.product_id} not found`);
+      }
+
+      // Check if there is enough stock available
+      if (product.stock < item.quantity) {
+        throw new Error(`Insufficient stock for product ${product.name}`);
+      }
+
+      // Deduct the quantity from the product's stock
+      product.stock -= item.quantity;
+      await product.save({ transaction });
+
       await OrderItem.create({
         orderId: newOrder.orderId,
         productId: item.product_id,
@@ -73,8 +93,11 @@ router.post('/checkout', [
         quantity: item.quantity,
         price: item.price,
         discount: item.retailer_discount || 0
-      });
+      }, { transaction });
     }
+
+    // Commit the transaction
+    await transaction.commit();
 
     res.status(201).json({
       message: 'Order placed successfully',

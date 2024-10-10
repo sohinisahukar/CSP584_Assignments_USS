@@ -1,7 +1,12 @@
 import { Link } from 'react-router-dom';
-import './Sidebar.css'; // Create custom CSS for sidebar
+import React, { useContext } from 'react';
+import './Sidebar.css';
+import { AuthContext } from '../context/AuthContext';
 
 const Sidebar = () => {
+
+  const { user } = useContext(AuthContext);
+
   return (
     <div className="sidebar">
       <ul className="sidebar-links">
@@ -14,6 +19,16 @@ const Sidebar = () => {
         <li>
           <Link to="/accessories">Accessories</Link>
         </li>
+        {user && user.userRole === 'StoreManager' && (
+          <>
+          <li>
+            <Link to="/inventory">Inventory</Link>
+          </li>
+          <li>
+          <Link to="/sales-report">Sales Report</Link>
+          </li>
+          </>
+        )}
       </ul>
     </div>
   );
