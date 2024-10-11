@@ -5,6 +5,7 @@ import './Header.css'; // Add custom styles here
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCartShopping } from '@fortawesome/free-solid-svg-icons';
 import { CartContext } from '../context/CartContext';
+import SearchAutoComplete from './SearchAutoComplete';
 
 const Header = () => {
 
@@ -69,6 +70,10 @@ const Header = () => {
           )}
           </ul>
         </nav>
+      </div>
+
+      <div className="header-center">
+        <SearchAutoComplete />
       </div>
       
       <div className="header-right">

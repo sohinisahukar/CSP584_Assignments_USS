@@ -28,6 +28,7 @@ const loadProductsIntoMap = async () => {
     const products = await Product.findAll();
     products.forEach((product) => {
       productsMap.set(product.product_id, {
+        product_id: product.product_id,
         name: product.name,
         description: product.description,
         price: product.price,

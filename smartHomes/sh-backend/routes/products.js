@@ -192,5 +192,26 @@ router.get('/salesReport/daily', authMiddleware, storeManagerOnly, async (req, r
   }
 });
 
+router.get('/search', async (req, res) => {
+  const query = req.query.q;
+
+  // If no query is provided, return an empty array
+  if (!query) {
+    return res.json([]);
+  }
+
+  // Convert query to lowercase for case-insensitive search
+  const searchQuery = query.toLowerCase();
+
+  // Filter products that match the query using the hashmap
+  const matchingProducts = Array.from(productHashMap.values()).filter(product =>
+    product.name.toLowerCase().includes(searchQuery)
+  );
+
+  // Return the filtered products (limit to top 10 matches for performance)
+  res.json(matchingProducts.slice(0, 10));
+});
+
+
 return router;
 };
