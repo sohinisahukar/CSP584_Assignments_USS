@@ -20,10 +20,44 @@ app.use(cors({ origin: 'http://localhost:3000' }));
 // Initialize the database models and associations
 require('./models/associations');
 
+// Initialize the hashmap
+const productsMap = new Map();
+
+const loadProductsIntoMap = async () => {
+  try {
+    const products = await Product.findAll();
+    products.forEach((product) => {
+      productsMap.set(product.product_id, {
+        name: product.name,
+        description: product.description,
+        price: product.price,
+        category: product.category,
+        retailer_discount: product.retailer_discount,
+        manufacturer_rebate: product.manufacturer_rebate,
+        image_path: product.image_path,
+        manufacturer_name: product.manufacturer_name,
+        stock: product.stock,
+      });
+    });
+    console.log('Products loaded into hashmap.');
+  } catch (error) {
+    console.error('Error loading products into hashmap:', error);
+  }
+};
+
+// Call this function when the server starts
+loadProductsIntoMap();
+
+// Middleware to inject the productsMap into req object
+app.use((req, res, next) => {
+  req.productsMap = productsMap;
+  next();
+});
+
 // Use auth routes for login and signup
 app.use('/api/auth', authRoutes);
 
-app.use('/api/products', productRoutes);
+app.use('/api/products', productRoutes(productsMap));
 
 app.use('/api/orders', orderRoutes);
 
@@ -31,6 +65,8 @@ app.use('/api/addresses', addressRoutes);
 
 app.use('/api/reviews', reviewRoutes);
 
+// Export the productsMap so it can be used in other files if necessary
+module.exports = { productsMap };
 
 // Function to initialize MySQL and MongoDB connections
 const initializeDatabases = async () => {
@@ -63,7 +99,7 @@ initializeDatabases().then(() => {
 // Create a route to get all products
 app.get('/products', async (req, res) => {
   try {
-    const products = await Product.findAll(); // Fetch all products from MySQL
+    const products = Array.from(productsMap.values());
     res.json(products);
   } catch (error) {
     res.status(500).json({ message: 'Server error', error });

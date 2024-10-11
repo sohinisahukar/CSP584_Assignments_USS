@@ -9,7 +9,11 @@ const AddProduct = () => {
     description: '',
     price: '',
     category: '',
-    image_path: ''
+    image_path: '',
+    retailer_discount: '',
+    manufacturer_rebate: '',
+    manufacturer_name: '',
+    stock: ''
   });
 
   const { user } = useContext(AuthContext);
@@ -52,7 +56,11 @@ const AddProduct = () => {
           description: '',
           price: '',
           category: '',
-          image_path: ''
+          image_path: '',
+          retailer_discount: '',
+          manufacturer_rebate: '',
+          manufacturer_name: '',
+          stock: ''
         });
         navigate('/');
       } else {
@@ -91,14 +99,6 @@ const AddProduct = () => {
           onChange={handleChange}
           required
         /><br />
-        {/* <input
-          type="text"
-          name="category"
-          placeholder="Product Category"
-          value={formData.category}
-          onChange={handleChange}
-          required
-        /><br /> */}
 
         <select
           name="category"
@@ -122,6 +122,41 @@ const AddProduct = () => {
           onChange={handleChange}
           required
         /><br />
+
+<input
+          type="number"
+          name="retailer_discount"
+          placeholder="Retailer Discount"
+          value={formData.retailer_discount}
+          onChange={handleChange}
+        /><br />
+
+        <input
+          type="number"
+          name="manufacturer_rebate"
+          placeholder="Manufacturer Rebate"
+          value={formData.manufacturer_rebate}
+          onChange={handleChange}
+        /><br />
+
+        <input
+          type="text"
+          name="manufacturer_name"
+          placeholder="Manufacturer Name"
+          value={formData.manufacturer_name}
+          onChange={handleChange}
+          required
+        /><br />
+
+        <input
+          type="number"
+          name="stock"
+          placeholder="Stock"
+          value={formData.stock}
+          onChange={handleChange}
+          required
+        /><br />
+
         <button type="submit">Add Product</button>
       </form>
     </div>

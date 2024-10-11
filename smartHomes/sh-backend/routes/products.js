@@ -6,12 +6,39 @@ const { Op } = require('sequelize');
 const sequelize = require('../config/database');
 const router = express.Router();
 
+
+module.exports = (productHashMap) => {
+
 // Add a new product (Only StoreManagers can do this)
 router.post('/', authMiddleware, storeManagerOnly, async (req, res) => {
-  const { name, description, price, category, image_path } = req.body;
-
+  const { name, description, price, category, image_path, retailer_discount, manufacturer_rebate, manufacturer_name, stock } = req.body;
+  
   try {
-    const newProduct = await Product.create({ name, description, price, category, image_path });
+    const newProduct = await Product.create({
+      name,
+      description,
+      price,
+      category,
+      image_path,
+      retailer_discount,
+      manufacturer_rebate,
+      manufacturer_name,
+      stock,
+  });
+
+  // Add the new product to the hashmap
+  productHashMap.set(newProduct.product_id, {
+      name: newProduct.name,
+      description: newProduct.description,
+      price: newProduct.price,
+      category: newProduct.category,
+      retailer_discount: newProduct.retailer_discount,
+      manufacturer_rebate: newProduct.manufacturer_rebate,
+      image_path: newProduct.image_path,
+      manufacturer_name: newProduct.manufacturer_name,
+      stock: newProduct.stock,
+  });
+
     res.status(201).json(newProduct);
   } catch (err) {
     console.error(err.message);
@@ -22,7 +49,7 @@ router.post('/', authMiddleware, storeManagerOnly, async (req, res) => {
 // Update an existing product (Only StoreManagers can do this)
 router.put('/:id', authMiddleware, storeManagerOnly, async (req, res) => {
   const productId = req.params.id;
-  const { name, description, price, category, image_path, retailer_discount, manufacturer_rebate } = req.body;
+  const { name, description, price, category, image_path, retailer_discount, manufacturer_rebate, manufacturer_name, stock } = req.body;
 
   try {
     const product = await Product.findByPk(productId);
@@ -37,8 +64,24 @@ router.put('/:id', authMiddleware, storeManagerOnly, async (req, res) => {
     product.image_path = image_path || product.image_path;
     product.retailer_discount = retailer_discount || product.retailer_discount;
     product.manufacturer_rebate = manufacturer_rebate || product.manufacturer_rebate;
+    product.manufacturer_name = manufacturer_name || product.manufacturer_name;
+    product.stock = stock || product.stock;
 
     await product.save();
+
+    // Update the hashmap with the new details
+    productHashMap.set(product.product_id, {
+      name: product.name,
+      description: product.description,
+      price: product.price,
+      category: product.category,
+      retailer_discount: product.retailer_discount,
+      manufacturer_rebate: product.manufacturer_rebate,
+      image_path: product.image_path,
+      manufacturer_name: product.manufacturer_name,
+      stock: product.stock,
+  });
+
     res.json(product);
   } catch (err) {
     console.error(err.message);
@@ -57,6 +100,10 @@ router.delete('/:id', authMiddleware, storeManagerOnly, async (req, res) => {
     }
 
     await product.destroy();
+
+    // Remove the product from the hashmap
+    productHashMap.delete(productId);
+
     res.json({ msg: 'Product deleted successfully' });
   } catch (err) {
     console.error(err.message);
@@ -145,4 +192,5 @@ router.get('/salesReport/daily', authMiddleware, storeManagerOnly, async (req, r
   }
 });
 
-module.exports = router;
+return router;
+};

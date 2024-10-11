@@ -206,4 +206,13 @@ GROUP BY p.name
 ORDER BY total_sold DESC
 LIMIT 5;
 
+-- Assignment3
+
+ALTER TABLE products ADD COLUMN stock INT DEFAULT 0;
+
+SET SQL_SAFE_UPDATES = 0;
+UPDATE products SET stock = 100;
+SET SQL_SAFE_UPDATES = 1;
+
+
 
