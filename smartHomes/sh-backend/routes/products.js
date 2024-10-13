@@ -39,6 +39,9 @@ router.post('/', authMiddleware, storeManagerOnly, async (req, res) => {
       stock: newProduct.stock,
   });
 
+  // Log the updated HashMap
+  console.log('Updated productHashMap after adding a new product:', Array.from(productHashMap.entries()));
+
     res.status(201).json(newProduct);
   } catch (err) {
     console.error(err.message);
@@ -82,6 +85,9 @@ router.put('/:id', authMiddleware, storeManagerOnly, async (req, res) => {
       stock: product.stock,
   });
 
+  // Log the updated HashMap
+  console.log('Updated productHashMap after updating the product:', Array.from(productHashMap.entries()));
+
     res.json(product);
   } catch (err) {
     console.error(err.message);
@@ -103,6 +109,9 @@ router.delete('/:id', authMiddleware, storeManagerOnly, async (req, res) => {
 
     // Remove the product from the hashmap
     productHashMap.delete(productId);
+
+    // Log the updated HashMap
+    console.log('Updated productHashMap after deleting the product:', Array.from(productHashMap.entries()));
 
     res.json({ msg: 'Product deleted successfully' });
   } catch (err) {

@@ -1,13 +1,12 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import './SearchAutoComplete.css'; // Add a CSS file for styling
+import './SearchAutoComplete.css'; // Ensure you have the required styles
 
 const SearchAutoComplete = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [suggestions, setSuggestions] = useState([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const navigate = useNavigate();
-  const searchRef = useRef(null);
 
   useEffect(() => {
     // Debounce the API call to avoid making too many requests
@@ -48,7 +47,6 @@ const SearchAutoComplete = () => {
   };
 
   const handleSuggestionClick = (productId) => {
-    // Navigate to the product's view page using its product ID
     navigate(`/products/productId/${productId}`);
     setShowSuggestions(false);
   };
@@ -71,7 +69,14 @@ const SearchAutoComplete = () => {
               onClick={() => handleSuggestionClick(product.product_id)}
               className="suggestion-item"
             >
-              {product.name}
+              <div className="suggestion-content">
+                <img src={product.image_path} alt={product.name} className="suggestion-image" />
+                <div className="suggestion-details">
+                  <span className="suggestion-name">{product.name}</span>
+                  <span className="suggestion-price">${product.price}</span>
+                  <span className="suggestion-manufacturer">Manufacturer: {product.manufacturer_name}</span>
+                </div>
+              </div>
             </li>
           ))}
         </ul>
