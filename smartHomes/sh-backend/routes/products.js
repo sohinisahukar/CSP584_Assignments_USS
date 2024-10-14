@@ -97,7 +97,7 @@ router.put('/:id', authMiddleware, storeManagerOnly, async (req, res) => {
 
 // Delete a product (Only StoreManagers can do this)
 router.delete('/:id', authMiddleware, storeManagerOnly, async (req, res) => {
-  const productId = req.params.id;
+  const productId = parseInt(req.params.id, 10);
 
   try {
     const product = await Product.findByPk(productId);
@@ -107,11 +107,13 @@ router.delete('/:id', authMiddleware, storeManagerOnly, async (req, res) => {
 
     await product.destroy();
 
-    // Remove the product from the hashmap
-    productHashMap.delete(productId);
-
-    // Log the updated HashMap
-    console.log('Updated productHashMap after deleting the product:', Array.from(productHashMap.entries()));
+    // Remove the product from the HashMap
+    if (productHashMap.has(productId)) {
+      productHashMap.delete(productId);
+      console.log(`Product with ID ${productId} removed from productHashMap.`);
+    } else {
+      console.log(`Product with ID ${productId} was not found in productHashMap.`);
+    }
 
     res.json({ msg: 'Product deleted successfully' });
   } catch (err) {
